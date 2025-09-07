@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" data-bs-theme="dark">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -13,66 +14,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
         rel="stylesheet">
-
-    <style>
-        html,
-        body {
-            height: 100%;
-        }
-
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
-        }
-
-        .form-control,
-        .btn {
-            border-radius: 0.35rem;
-        }
-
-        .thumb-img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .unavailable {
-            opacity: 0.45;
-            filter: grayscale(70%);
-        }
-
-        .small-muted {
-            font-size: .85rem;
-        }
-
-        .btn-bg-transp:hover {
-            background-color: #ffffff25;
-        }
-
-        .thumbman-title {
-            font-family: 'Oswald', sans-serif;
-            font-size: 2rem;
-            line-height: 1;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <nav class="navbar navbar-dark bg-dark px-3">
-        <a class="navbar-brand thumbman-title" href="#">Thumbman</a>
-        <span class="small-muted">
-            <a href="http://github.com/theonlyasdk/thumbman" class="btn btn-bg-transp"><i class="bi bi-github"></i></a>
-        </span>
-    </nav>
+    <main class="container h-100 py-4 d-flex align-items-center justify-content-center flex-column">
+        <div class="text-center mb-4 d-flex flex-row justify-content-center align-items-center gap-3">
+            <h1 class="thumbman-title m-0 p-0">Thumbman</h1>
+            <div class="d-flex flex-column gap-2 m-0 p-0">
+                <a href="http://github.com/theonlyasdk/thumbman" class="btn btn-bg-transp m-0"><i
+                        class="bi bi-github" title="GitHub Repository"></i></a>
+                <a href="http://github.com/theonlyasdk/thumbman/issues" class="btn btn-bg-transp m-0"><i
+                        class="bi bi-bug-fill" title="Report issues on GitHub"></i></a>
+            </div>
+        </div>
 
-    <main class="container h-100 py-4">
-        <div class="mb-3 d-flex flex-row align-items-center gap-2">
-            <input id="urlInput" class="form-control" placeholder="e.g. https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ"
+        <div class="mb-3 d-flex flex-row justify-content-center align-items-center gap-2 w-100">
+            <input id="urlInput" class="input-text" placeholder="e.g. https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ"
                 aria-label="YouTube URL" title="Paste YouTube URL or video ID here" autocomplete="off">
-            <button id="grabBtn" class="btn btn-primary" type="button" title="Get thumbnails">Get</button>
+            <button id="grabBtn" class="button" type="button" title="Get thumbnails">Get</button>
         </div>
         <div id="alertArea"></div>
         <div id="results" class="row g-3"></div>
-        <div class="mt-4 small-muted mb-3">Paste a YouTube URL or video ID in the input box to get its thumbnail.</div>
+        <div class="mt-4 small-muted mb-3" id="hint">Paste a YouTube URL or video ID in the input box to get its
+            thumbnail.</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -110,7 +75,7 @@
 
         function showAlert(type, text) {
             const alertArea = document.getElementById('alertArea');
-            const html = `<div class="alert alert-${type} alert-dismissible" role="alert">${text}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+            const html = `<div class="alert alert-${type} alert-dismissible mb-0 w-100" role="alert">${text}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
             alertArea.innerHTML = html;
         }
 
@@ -139,11 +104,13 @@
             footer.classList.add('card-footer', 'bg-transparent', 'border-0', 'p-2', 'd-flex', 'gap-2');
 
             const dl = document.createElement('button');
-            dl.classList.add('btn', 'btn-sm', 'btn-primary', 'flex-grow-1');
+            dl.title = 'Download this thumbnail';
+            dl.classList.add('button', 'button-sm', 'flex-grow-1');
             dl.innerHTML = '<i class="bi bi-download me-1"></i> Download';
 
             const open = document.createElement('a');
-            open.classList.add('btn', 'btn-sm', 'btn-outline-light', 'flex-grow-1');
+            open.title = 'Open this thumbnail in a new tab';
+            open.classList.add('button', 'button-sm', 'flex-grow-1', 'text-center', 'text-decoration-none');
             open.setAttribute('href', item.url);
             open.setAttribute('target', '_blank');
             open.setAttribute('rel', 'noopener');
@@ -167,7 +134,7 @@
                 open.classList.add('disabled');
                 open.textContent = 'Unavailable';
             });
-            
+
             dl.addEventListener('click', () => {
                 fetch(item.url)
                     .then(response => response.blob())
@@ -197,6 +164,8 @@
             const results = document.getElementById('results');
             const alertArea = document.getElementById('alertArea');
 
+            urlInput.focus();
+
             function doGrabVideoURL() {
                 results.innerHTML = '';
                 alertArea.innerHTML = '';
@@ -207,14 +176,18 @@
                 }
                 const id = extractVideoID(input);
                 if (!id) {
-                    showAlert('danger', 'Could not parse a video ID. Paste a full URL or the 11-character ID.');
+                    showAlert('danger', 'Hmm, that does not seem like a valid YouTUbe video link. Paste a full URL or the 11-character ID.');
                     return;
                 }
+
+                results.style.display = 'flex';
 
                 const list = buildThumbUrl(id);
                 for (const item of list) {
                     results.appendChild(createCard(item));
                 }
+
+                document.getElementById('hint').style.display = 'none';
             }
 
             grabBtn.addEventListener('click', doGrabVideoURL);
