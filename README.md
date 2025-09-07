@@ -1,2 +1,2 @@
-# thumbman
+# Thumbman
 Grab YouTube thumbnails
